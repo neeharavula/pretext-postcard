@@ -293,6 +293,7 @@ export default function Home() {
             href="https://github.com/chenglou/pretext"
             target="_blank"
             rel="noopener noreferrer"
+            className="info-link"
             style={{ color: "inherit", textDecoration: "underline" }}
           >
             Cheng Lou&apos;s Pretext
@@ -302,6 +303,7 @@ export default function Home() {
             href="https://neeharavula.com/"
             target="_blank"
             rel="noopener noreferrer"
+            className="info-link"
             style={{ color: "inherit", textDecoration: "underline" }}
           >
             Neeha Ravula

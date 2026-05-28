@@ -20,3 +20,7 @@ body {
     url(/stamp-cursor.png) 45 30,
     crosshair;
 }
+
+.info-link:hover {
+  color: #d55e37 !important;
+}
