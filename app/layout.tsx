@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "pretext postcard",
-  description: "A pretext exploration demo",
+  title: "postcard",
+  description: "A pretext exploration demo inspired by a trip to Buenos Aires.",
 };
 
 export default function RootLayout({
@@ -24,7 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${reenieBeanie.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${reenieBeanie.variable} ${geistMono.variable}`}
+    >
       <body>{children}</body>
     </html>
   );

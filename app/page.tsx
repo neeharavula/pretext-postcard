@@ -287,7 +287,12 @@ export default function Home() {
         >
           Info
         </button>
-        <span style={{ maxWidth: 380, visibility: infoVisible ? "visible" : "hidden" }}>
+        <span
+          style={{
+            maxWidth: 380,
+            visibility: infoVisible ? "visible" : "hidden",
+          }}
+        >
           An exploration of{" "}
           <a
             href="https://github.com/chenglou/pretext"
@@ -298,7 +303,7 @@ export default function Home() {
           >
             Cheng Lou&apos;s Pretext
           </a>
-          , inspired by a trip to Buenos Aires in 2025. Made by{" "}
+          inspired by a trip to Buenos Aires in 2025. Made by{" "}
           <a
             href="https://neeharavula.com/"
             target="_blank"
@@ -306,7 +311,7 @@ export default function Home() {
             className="info-link"
             style={{ color: "inherit", textDecoration: "underline" }}
           >
-            Neeha Ravula
+            Neeha Ravula. Click to stamp!
           </a>
           .
         </span>
