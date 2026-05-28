@@ -259,7 +259,7 @@ export default function Home() {
       <div
         style={{
           position: "fixed",
-          bottom: 24,
+          bottom: 28,
           left: 28,
           display: "flex",
           alignItems: "center",
@@ -268,7 +268,7 @@ export default function Home() {
           fontSize: 12,
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          color: "#2c3e45",
+          color: "#675952",
         }}
       >
         <button
