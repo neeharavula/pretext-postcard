@@ -3,8 +3,9 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import {
   prepareWithSegments,
-  layoutWithLines,
+  layoutNextLine,
   type PreparedTextWithSegments,
+  type LayoutCursor,
 } from "@chenglou/pretext";
 
 const CARD_W = 900;
@@ -30,6 +31,43 @@ const ADDRESS_X = 560;
 const ADDRESS_Y = 210;
 const ADDRESS_HEADER_GAP = 36;
 const ADDRESS_LINE_HEIGHT = 64;
+const ADDRESS_W = CARD_W - ADDRESS_X - 30;
+
+const OBSTACLE_R = 65;
+const MIN_SLOT_W = 40;
+
+type Mouse = { x: number; y: number };
+
+// Returns the available horizontal slot for a text line given the cursor obstacle.
+// areaX/areaW define the text region so the slot never escapes those bounds.
+// Returns w=-1 when the obstacle fully covers the line (caller should skip/hide it).
+function computeSlot(
+  lineY: number,
+  lineH: number,
+  mouse: Mouse | null,
+  areaX: number,
+  areaW: number,
+): { x: number; w: number } {
+  if (!mouse) return { x: areaX, w: areaW };
+
+  const dy = lineY + lineH / 2 - mouse.y;
+  if (Math.abs(dy) >= OBSTACLE_R) return { x: areaX, w: areaW };
+
+  const dx = Math.sqrt(OBSTACLE_R * OBSTACLE_R - dy * dy);
+  const blockLeft = mouse.x - dx;
+  const blockRight = mouse.x + dx;
+
+  // Obstacle doesn't overlap this text area at all
+  if (blockLeft >= areaX + areaW || blockRight <= areaX) return { x: areaX, w: areaW };
+
+  const rightX = Math.max(areaX, blockRight + 6);
+  const rightW = Math.max(0, areaX + areaW - rightX);
+  const leftW = Math.max(0, Math.min(areaW, blockLeft - areaX - 6));
+
+  if (rightW >= leftW && rightW >= MIN_SLOT_W) return { x: rightX, w: rightW };
+  if (leftW >= MIN_SLOT_W) return { x: areaX, w: leftW };
+  return { x: areaX, w: -1 };
+}
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -38,6 +76,8 @@ export default function Home() {
   const postcardImg = useRef<HTMLImageElement | null>(null);
   const stampPrintImg = useRef<HTMLImageElement | null>(null);
   const preparedText = useRef<PreparedTextWithSegments | null>(null);
+  const mousePos = useRef<Mouse | null>(null);
+  const rafId = useRef<number | null>(null);
 
   useEffect(() => {
     let loadedImages = 0;
@@ -62,9 +102,6 @@ export default function Home() {
     sp.onload = onImageLoad;
     stampPrintImg.current = sp;
 
-    // Must wait for font before calling prepareWithSegments() — pretext measures
-    // text via canvas measureText() and needs the real font loaded, otherwise
-    // it falls back to a system font and line breaks come out wrong.
     document.fonts.load(FONT).then(() => {
       preparedText.current = prepareWithSegments(TEXT, FONT);
       fontLoaded = true;
@@ -80,37 +117,81 @@ export default function Home() {
 
     ctx.drawImage(postcardImg.current!, 0, 0, CARD_W, CARD_H);
 
-    const { lines } = layoutWithLines(
-      preparedText.current,
-      TEXT_W,
-      LINE_HEIGHT,
-    );
-
     ctx.font = FONT;
     ctx.fillStyle = "#1c2a4a";
     ctx.textBaseline = "top";
 
-    lines.forEach((line, i) => {
-      ctx.fillText(line.text, TEXT_X, TEXT_Y + i * LINE_HEIGHT);
-    });
+    const mouse = mousePos.current;
 
-    ctx.fillText("To:", ADDRESS_X, ADDRESS_Y);
-    ADDRESS_LINES.forEach((line, i) => {
-      ctx.fillText(
-        line,
-        ADDRESS_X,
-        ADDRESS_Y + ADDRESS_HEADER_GAP + i * ADDRESS_LINE_HEIGHT,
-      );
+    // --- Message text (flowing paragraph, pretext iterator) ---
+    let cursor: LayoutCursor = { segmentIndex: 0, graphemeIndex: 0 };
+    let lineIndex = 0;
+
+    while (true) {
+      const lineY = TEXT_Y + lineIndex * LINE_HEIGHT;
+      if (lineY > CARD_H) break;
+
+      const slot = computeSlot(lineY, LINE_HEIGHT, mouse, TEXT_X, TEXT_W);
+
+      if (slot.w < 0) {
+        // Fully blocked — advance the text cursor without rendering so the
+        // paragraph flow doesn't stall or repeat on the next line.
+        const skipped = layoutNextLine(preparedText.current, cursor, TEXT_W);
+        if (!skipped) break;
+        cursor = skipped.end;
+        lineIndex++;
+        continue;
+      }
+
+      const line = layoutNextLine(preparedText.current, cursor, slot.w);
+      if (!line) break;
+
+      ctx.fillText(line.text, slot.x, lineY);
+      cursor = line.end;
+      lineIndex++;
+    }
+
+    // --- Address text (fixed lines, same obstacle geometry) ---
+    const toSlot = computeSlot(ADDRESS_Y, LINE_HEIGHT, mouse, ADDRESS_X, ADDRESS_W);
+    ctx.fillText("To:", toSlot.w >= 0 ? toSlot.x : ADDRESS_X, ADDRESS_Y);
+
+    ADDRESS_LINES.forEach((addressLine, i) => {
+      const lineY = ADDRESS_Y + ADDRESS_HEADER_GAP + i * ADDRESS_LINE_HEIGHT;
+      const slot = computeSlot(lineY, ADDRESS_LINE_HEIGHT, mouse, ADDRESS_X, ADDRESS_W);
+      ctx.fillText(addressLine, slot.w >= 0 ? slot.x : ADDRESS_X, lineY);
     });
   }, []);
+
+  const scheduleRedraw = useCallback(() => {
+    if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+    rafId.current = requestAnimationFrame(draw);
+  }, [draw]);
 
   useEffect(() => {
     if (!ready) return;
     draw();
   }, [ready, draw]);
 
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      mousePos.current = {
+        x: e.nativeEvent.offsetX / DISPLAY_SCALE,
+        y: e.nativeEvent.offsetY / DISPLAY_SCALE,
+      };
+      scheduleRedraw();
+    },
+    [scheduleRedraw],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    mousePos.current = null;
+    scheduleRedraw();
+  }, [scheduleRedraw]);
+
   return (
     <div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       style={{
         position: "relative",
         width: CARD_W * DISPLAY_SCALE,
