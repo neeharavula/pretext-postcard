@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 
 const CARD_W = 900;
 const CARD_H = 600;
+const DISPLAY_SCALE = 0.75;
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,8 +47,8 @@ export default function Home() {
     <div
       style={{
         position: "relative",
-        width: CARD_W,
-        height: CARD_H,
+        width: CARD_W * DISPLAY_SCALE,
+        height: CARD_H * DISPLAY_SCALE,
         borderRadius: 8,
         overflow: "hidden",
         transform: "rotate(-4deg)",
@@ -58,7 +59,7 @@ export default function Home() {
         ref={canvasRef}
         width={CARD_W}
         height={CARD_H}
-        style={{ display: "block" }}
+        style={{ display: "block", width: CARD_W * DISPLAY_SCALE, height: CARD_H * DISPLAY_SCALE }}
       />
     </div>
   );
