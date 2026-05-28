@@ -58,7 +58,8 @@ function computeSlot(
   const blockRight = mouse.x + dx;
 
   // Obstacle doesn't overlap this text area at all
-  if (blockLeft >= areaX + areaW || blockRight <= areaX) return { x: areaX, w: areaW };
+  if (blockLeft >= areaX + areaW || blockRight <= areaX)
+    return { x: areaX, w: areaW };
 
   const rightX = Math.max(areaX, blockRight + 6);
   const rightW = Math.max(0, areaX + areaW - rightX);
@@ -72,6 +73,7 @@ function computeSlot(
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
 
   const postcardImg = useRef<HTMLImageElement | null>(null);
   const stampPrintImg = useRef<HTMLImageElement | null>(null);
@@ -156,18 +158,36 @@ export default function Home() {
     }
 
     // --- Address text (fixed lines, same obstacle geometry) ---
-    const toSlot = computeSlot(ADDRESS_Y, LINE_HEIGHT, mouse, ADDRESS_X, ADDRESS_W);
+    const toSlot = computeSlot(
+      ADDRESS_Y,
+      LINE_HEIGHT,
+      mouse,
+      ADDRESS_X,
+      ADDRESS_W,
+    );
     ctx.fillText("To:", toSlot.w >= 0 ? toSlot.x : ADDRESS_X, ADDRESS_Y);
 
     ADDRESS_LINES.forEach((addressLine, i) => {
       const lineY = ADDRESS_Y + ADDRESS_HEADER_GAP + i * ADDRESS_LINE_HEIGHT;
-      const slot = computeSlot(lineY, ADDRESS_LINE_HEIGHT, mouse, ADDRESS_X, ADDRESS_W);
+      const slot = computeSlot(
+        lineY,
+        ADDRESS_LINE_HEIGHT,
+        mouse,
+        ADDRESS_X,
+        ADDRESS_W,
+      );
       ctx.fillText(addressLine, slot.w >= 0 ? slot.x : ADDRESS_X, lineY);
     });
 
     // --- Placed stamps (drawn last so they sit on top of text) ---
     for (const s of stamps.current) {
-      ctx.drawImage(stampPrintImg.current!, s.x - STAMP_W / 2, s.y - STAMP_H / 2, STAMP_W, STAMP_H);
+      ctx.drawImage(
+        stampPrintImg.current!,
+        s.x - STAMP_W / 2,
+        s.y - STAMP_H / 2,
+        STAMP_W,
+        STAMP_H,
+      );
     }
   }, []);
 
@@ -209,30 +229,86 @@ export default function Home() {
   );
 
   return (
-    <div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
-      style={{
-        position: "relative",
-        width: CARD_W * DISPLAY_SCALE,
-        height: CARD_H * DISPLAY_SCALE,
-        borderRadius: 8,
-        overflow: "hidden",
-        transform: "rotate(-4deg)",
-        cursor: `url(/stamp-cursor.png) 45 30, crosshair`,
-      }}
-    >
-      <canvas
-        ref={canvasRef}
-        width={CARD_W}
-        height={CARD_H}
+    <>
+      <div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
         style={{
-          display: "block",
+          position: "relative",
           width: CARD_W * DISPLAY_SCALE,
           height: CARD_H * DISPLAY_SCALE,
+          borderRadius: 8,
+          overflow: "hidden",
+          transform: "rotate(-4deg)",
+          cursor: `url(/stamp-cursor.png) 45 30, crosshair`,
         }}
-      />
-    </div>
+      >
+        <canvas
+          ref={canvasRef}
+          width={CARD_W}
+          height={CARD_H}
+          style={{
+            display: "block",
+            width: CARD_W * DISPLAY_SCALE,
+            height: CARD_H * DISPLAY_SCALE,
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          position: "fixed",
+          bottom: 24,
+          left: 28,
+          display: "flex",
+          alignItems: "center",
+          gap: 50,
+          fontFamily: "var(--font-geist-mono)",
+          fontSize: 12,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "#2c3e45",
+        }}
+      >
+        <button
+          onClick={() => setInfoVisible((v) => !v)}
+          style={{
+            fontFamily: "inherit",
+            fontSize: "inherit",
+            letterSpacing: "inherit",
+            textTransform: "inherit",
+            color: "inherit",
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "inherit",
+          }}
+        >
+          Info
+        </button>
+        <span style={{ maxWidth: 380, visibility: infoVisible ? "visible" : "hidden" }}>
+          An exploration of{" "}
+          <a
+            href="https://github.com/chenglou/pretext"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "inherit", textDecoration: "underline" }}
+          >
+            Cheng Lou&apos;s Pretext
+          </a>
+          , inspired by a trip to Buenos Aires in 2025. Made by{" "}
+          <a
+            href="https://neeharavula.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "inherit", textDecoration: "underline" }}
+          >
+            Neeha Ravula
+          </a>
+          .
+        </span>
+      </div>
+    </>
   );
 }

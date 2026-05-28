@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { Reenie_Beanie } from "next/font/google";
+import { Reenie_Beanie, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const reenieBeanie = Reenie_Beanie({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-reenie-beanie",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
@@ -19,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={reenieBeanie.variable}>
+    <html lang="en" className={`${reenieBeanie.variable} ${geistMono.variable}`}>
       <body>{children}</body>
     </html>
   );

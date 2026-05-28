@@ -13,8 +13,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #b7cdd4;
+  background: #c1d6dc;
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
-  cursor: url(/stamp-cursor.png) 45 30, crosshair;
+  cursor:
+    url(/stamp-cursor.png) 45 30,
+    crosshair;
 }
