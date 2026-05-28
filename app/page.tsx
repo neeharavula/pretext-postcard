@@ -1,66 +1,65 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useRef, useEffect, useState } from "react";
+
+const CARD_W = 900;
+const CARD_H = 600;
 
 export default function Home() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  // Preload images
+  const postcardImg = useRef<HTMLImageElement | null>(null);
+  const stampPrintImg = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    let loaded = 0;
+    const onLoad = () => {
+      loaded++;
+      if (loaded === 2) setImagesLoaded(true);
+    };
+
+    const pc = new Image();
+    pc.src = "/postcard.jpeg";
+    pc.onload = onLoad;
+    postcardImg.current = pc;
+
+    const sp = new Image();
+    sp.src = "/stamp-print.png";
+    sp.onload = onLoad;
+    stampPrintImg.current = sp;
+  }, []);
+
+  // Draw the postcard background once images are loaded
+  useEffect(() => {
+    if (!imagesLoaded) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(postcardImg.current!, 0, 0, CARD_W, CARD_H);
+  }, [imagesLoaded]);
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div
+      style={{
+        position: "relative",
+        width: CARD_W,
+        height: CARD_H,
+        borderRadius: 8,
+        overflow: "hidden",
+        transform: "rotate(-4deg)",
+        cursor: `url(/stamp-cursor.png) 45 30, crosshair`,
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        width={CARD_W}
+        height={CARD_H}
+        style={{ display: "block" }}
+      />
     </div>
   );
 }
