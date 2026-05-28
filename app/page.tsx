@@ -77,7 +77,11 @@ export default function Home() {
   const stampPrintImg = useRef<HTMLImageElement | null>(null);
   const preparedText = useRef<PreparedTextWithSegments | null>(null);
   const mousePos = useRef<Mouse | null>(null);
+  const stamps = useRef<Mouse[]>([]);
   const rafId = useRef<number | null>(null);
+
+  const STAMP_W = 220;
+  const STAMP_H = 147;
 
   useEffect(() => {
     let loadedImages = 0;
@@ -160,6 +164,11 @@ export default function Home() {
       const slot = computeSlot(lineY, ADDRESS_LINE_HEIGHT, mouse, ADDRESS_X, ADDRESS_W);
       ctx.fillText(addressLine, slot.w >= 0 ? slot.x : ADDRESS_X, lineY);
     });
+
+    // --- Placed stamps (drawn last so they sit on top of text) ---
+    for (const s of stamps.current) {
+      ctx.drawImage(stampPrintImg.current!, s.x - STAMP_W / 2, s.y - STAMP_H / 2, STAMP_W, STAMP_H);
+    }
   }, []);
 
   const scheduleRedraw = useCallback(() => {
@@ -188,10 +197,22 @@ export default function Home() {
     scheduleRedraw();
   }, [scheduleRedraw]);
 
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      stamps.current.push({
+        x: e.nativeEvent.offsetX / DISPLAY_SCALE,
+        y: e.nativeEvent.offsetY / DISPLAY_SCALE,
+      });
+      scheduleRedraw();
+    },
+    [scheduleRedraw],
+  );
+
   return (
     <div
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
       style={{
         position: "relative",
         width: CARD_W * DISPLAY_SCALE,
