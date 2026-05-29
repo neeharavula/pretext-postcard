@@ -13,18 +13,18 @@ const CARD_H = 600;
 const DISPLAY_SCALE = 0.75;
 
 const TEXT =
-  "Hello from Buenos Aires! Hope this finds you well. Today we wandered Palermo Soho and completely lost track of time — cobblestone streets tunneled by tipa trees, alleyways full of murals, cute shops, cafés, and Messi on practically every corner. Arrived late, got lost twice, found the best empanadas entirely by accident. I bought a book I can't read. I'll figure it out. Wish you were here.";
+  "Hello from Buenos Aires! Hope this finds you well. Today we explored Palermo Soho and lost track of time wandering the cute shops and cobblestone streets tunneled by tipa trees. I got to try alfajores for the first time, it was as good as you told me it would be (I bought a bottle of dulce de leche to bring back home of course). Summer is so sweet here. Everyone is out and about, the cicadas are chirping, and there's always some music playing in the distance. Wish you were here.";
 
 const FONT = "26px 'Reenie Beanie'";
 const TEXT_X = 50;
-const TEXT_Y = 160;
-const TEXT_W = 445;
+const TEXT_Y = 140;
+const TEXT_W = 455;
 const LINE_HEIGHT = 40;
 
 const ADDRESS_LINES = [
   "Jamie Reyes",
   "47 Elmwood Drive",
-  "Portland, OR 97201",
+  "Los Angeles, CA 90025",
   "United States",
 ];
 const ADDRESS_X = 560;
@@ -302,7 +302,7 @@ export default function Home() {
             style={{ color: "inherit", textDecoration: "underline" }}
           >
             Cheng Lou&apos;s Pretext
-          </a>
+          </a>{" "}
           inspired by a trip to Buenos Aires in 2025. Made by{" "}
           <a
             href="https://neeharavula.com/"
@@ -311,9 +311,9 @@ export default function Home() {
             className="info-link"
             style={{ color: "inherit", textDecoration: "underline" }}
           >
-            Neeha Ravula. Click to stamp!
+            Neeha Ravula
           </a>
-          .
+          . Click to stamp!
         </span>
       </div>
     </>
